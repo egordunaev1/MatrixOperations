@@ -90,6 +90,7 @@ And the following elementary operation commands:
 **simplify** - simplifies selected expression and replaces the selection with result.
 
 Can additionally transpose matrices with ^T and inverse matrices with ^{-1}:
+
 <img width="397" alt="изображение" src="https://user-images.githubusercontent.com/56740700/142760237-f664ec1b-86b9-4d9a-bf04-da2ae624d2cc.png">
 
 
