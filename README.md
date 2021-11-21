@@ -12,7 +12,7 @@ git clone https://github.com/egordunaev1/MatrixOperations/
 ```
 pip3 install sympy, antlr4-python3-runtime
 ```
-4. Installing another good plugin
+4. Install another useful plugin
 
 Go to **Options->Comunity plugins**, turn off **Safe mode**.
 
@@ -33,6 +33,8 @@ Create file preamble.sty in the root of your obsidian vault with following comma
 
 \newcommand{\lra}{\leftrightarrow}
 ```
+
+This commands will be preloaded when obsidian loads, so you can use them in LaTeX.
 
 5. Setting up plugin
 
