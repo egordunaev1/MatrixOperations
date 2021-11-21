@@ -36,7 +36,7 @@ export default class MatrixOperationsPlugin extends Plugin {
 				}
 			},
 			pythonPath: this.settings.pythonPath,
-			scriptPath: path + '/.obsidian/plugins/obsidian-sample-plugin/src/',
+			scriptPath: path + "/.obsidian/plugins/MatrixOperations/src/",
 			args: [this.settings.commands]
 		};
 
@@ -69,7 +69,6 @@ export default class MatrixOperationsPlugin extends Plugin {
 			editorCallback: (editor: Editor, view: MarkdownView) => {
 				this.editors[this.id] = editor;
 				let latex = editor.getSelection();
-				console.log(JSON.stringify({ command: 'simplify', text: latex, 'id': this.id }));
 				this.pyshell.send({ command: 'simplify', text: latex, 'id': this.id });
 				this.id++;
 			}

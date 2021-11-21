@@ -374,7 +374,7 @@ var MatrixOperationsPlugin = class extends import_obsidian.Plugin {
         }
       },
       pythonPath: this.settings.pythonPath,
-      scriptPath: path + "/.obsidian/plugins/obsidian-sample-plugin/src/",
+      scriptPath: path + "/.obsidian/plugins/MatrixOperations/src/",
       args: [this.settings.commands]
     };
     this.pyshell = new import_python_shell.PythonShell("main.py", pyshell_options);
@@ -418,7 +418,6 @@ var MatrixOperationsPlugin = class extends import_obsidian.Plugin {
       editorCallback: (editor, view) => {
         this.editors[this.id] = editor;
         let latex = editor.getSelection();
-        console.log(JSON.stringify({ command: "simplify", text: latex, "id": this.id }));
         this.pyshell.send({ command: "simplify", text: latex, "id": this.id });
         this.id++;
       }

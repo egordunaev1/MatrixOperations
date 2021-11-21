@@ -1,0 +1,8 @@
+{
+    "id": "obsidian-plugin-matrix-operations",
+    "name": "Matrix Operations",
+    "author": "Dunaev Egor",
+    "description": "Make operations with matrices directly in obsidian.",
+    "isDesktopOnly": true,
+    "version": "0.1"
+  }
