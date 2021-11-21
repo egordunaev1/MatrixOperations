@@ -1,85 +1,155 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, Vault, FileSystemAdapter } from 'obsidian';
+import { PythonShell } from 'python-shell';
 
-// Remember to rename these classes and interfaces!
 
-interface MyPluginSettings {
-	mySetting: string;
+interface MatrixOperationsSettings {
+	pythonPath: string;
+	commands: string;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+const DEFAULT_SETTINGS: MatrixOperationsSettings = {
+	pythonPath: '',
+	commands: ''
 }
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class MatrixOperationsPlugin extends Plugin {
+	settings: MatrixOperationsSettings;
+	pyshell: PythonShell;
+	id: 1;
+	editors: {};
+
+	run_pyshell() {
+		// Getting vault path
+		var path = ""
+		if (this.app.vault.adapter instanceof FileSystemAdapter) {
+			path = this.app.vault.adapter.getBasePath();
+		}
+
+		// Setting up python shell
+		let pyshell_options = {
+			mode: 'json',
+			parser: function (x: any) {
+				try {
+					return JSON.parse(x);
+				} catch (e) {
+					return JSON.stringify({ command: 'null' });
+				}
+			},
+			pythonPath: this.settings.pythonPath,
+			scriptPath: path + '/.obsidian/plugins/obsidian-sample-plugin/src/',
+			args: [this.settings.commands]
+		};
+
+		this.pyshell = new PythonShell('main.py', pyshell_options);
+
+		this.id = 1;
+		this.editors = {};
+
+		this.pyshell.on('message', (message: object) => {
+			if (message.command) {
+				let editor = this.editors[message.id];
+				switch (message.command) {
+					case 'simplify': editor.replaceSelection(message.res); break;
+					case 'el_ops': editor.replaceSelection(message.res); break;
+					case 'transpose': editor.replaceSelection(message.res); break;
+					case 'inverse': editor.replaceSelection(message.res); break;
+					case 'ref': editor.replaceSelection(message.res); break;
+					case 'rref': editor.replaceSelection(message.res); break;
+					case 'matrix_info': new TextModal(this.app, message.res).open(); break;
+					case 'error': new Notice(message.res); break;
+				}
+				delete this.editors[message.id];
+			}
+		});
+
+		// Setting up commands
+		this.addCommand({
+			id: 'simplify',
+			name: 'simplify',
+			editorCallback: (editor: Editor, view: MarkdownView) => {
+				this.editors[this.id] = editor;
+				let latex = editor.getSelection();
+				console.log(JSON.stringify({ command: 'simplify', text: latex, 'id': this.id }));
+				this.pyshell.send({ command: 'simplify', text: latex, 'id': this.id });
+				this.id++;
+			}
+		});
+
+		this.addCommand({
+			id: 'el_ops',
+			name: 'el_ops',
+			editorCallback: (editor: Editor, view: MarkdownView) => {
+				this.editors[this.id] = editor;
+				let latex = editor.getSelection();
+				this.pyshell.send({ command: 'el_ops', text: latex, 'id': this.id });
+				this.id++;
+			}
+		});
+
+		this.addCommand({
+			id: 'matrix_info',
+			name: 'matrix_info',
+			editorCallback: (editor: Editor, view: MarkdownView) => {
+				this.editors[this.id] = editor;
+				let latex = editor.getSelection();
+				this.pyshell.send({ command: 'matrix_info', text: latex, 'id': this.id });
+				this.id++;
+			}
+		});
+
+		this.addCommand({
+			id: 'inverse_matrix',
+			name: 'inverse_matrix',
+			editorCallback: (editor: Editor, view: MarkdownView) => {
+				this.editors[this.id] = editor;
+				let latex = editor.getSelection();
+				this.pyshell.send({ command: 'inverse', text: latex, 'id': this.id });
+				this.id++;
+			}
+		});
+
+		this.addCommand({
+			id: 'transpose_matrix',
+			name: 'transpose_matrix',
+			editorCallback: (editor: Editor, view: MarkdownView) => {
+				this.editors[this.id] = editor;
+				let latex = editor.getSelection();
+				this.pyshell.send({ command: 'transpose', text: latex, 'id': this.id });
+				this.id++;
+			}
+		});
+
+		this.addCommand({
+			id: 'ref',
+			name: 'ref',
+			editorCallback: (editor: Editor, view: MarkdownView) => {
+				this.editors[this.id] = editor;
+				let latex = editor.getSelection();
+				this.pyshell.send({ command: 'ref', text: latex, 'id': this.id });
+				this.id++;
+			}
+		});
+
+		this.addCommand({
+			id: 'rref',
+			name: 'rref',
+			editorCallback: (editor: Editor, view: MarkdownView) => {
+				this.editors[id] = editor;
+				let latex = editor.getSelection();
+				this.pyshell.send({ command: 'rref', text: latex, 'id': this.id });
+				this.id++;
+			}
+		});
+	}
 
 	async onload() {
 		await this.loadSettings();
-
-		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
-		});
-		// Perform additional things with the ribbon
-		ribbonIconEl.addClass('my-plugin-ribbon-class');
-
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status Bar Text');
-
-		// This adds a simple command that can be triggered anywhere
-		this.addCommand({
-			id: 'open-sample-modal-simple',
-			name: 'Open sample modal (simple)',
-			callback: () => {
-				new SampleModal(this.app).open();
-			}
-		});
-		// This adds an editor command that can perform some operation on the current editor instance
-		this.addCommand({
-			id: 'sample-editor-command',
-			name: 'Sample editor command',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				console.log(editor.getSelection());
-				editor.replaceSelection('Sample Editor Command');
-			}
-		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-sample-modal-complex',
-			name: 'Open sample modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-
-					// This command will only show up in Command Palette when the check function returns true
-					return true;
-				}
-			}
-		});
-
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
-		});
-
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
+		this.addSettingTab(new SettingTab(this.app, this));
+		this.run_pyshell();
 	}
 
 	onunload() {
-
+		this.pyshell.kill();
 	}
 
 	async loadSettings() {
@@ -91,47 +161,65 @@ export default class MyPlugin extends Plugin {
 	}
 }
 
-class SampleModal extends Modal {
-	constructor(app: App) {
+class TextModal extends Modal {
+	message = "";
+
+	constructor(app: App, message: string) {
 		super(app);
+		this.message = message;
 	}
 
 	onOpen() {
-		const {contentEl} = this;
-		contentEl.setText('Woah!');
+		const { contentEl } = this;
+		contentEl.setText(this.message);
 	}
 
 	onClose() {
-		const {contentEl} = this;
+		const { contentEl } = this;
 		contentEl.empty();
 	}
 }
 
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
 
-	constructor(app: App, plugin: MyPlugin) {
+class SettingTab extends PluginSettingTab {
+	plugin: MatrixOperationsPlugin;
+
+	constructor(app: App, plugin: MatrixOperationsPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
 
 	display(): void {
-		const {containerEl} = this;
+		const { containerEl } = this;
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', {text: 'Settings for my awesome plugin.'});
+		containerEl.createEl('h2', { text: 'Matrix Calculator - Settings' });
 
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
+			.setName('Python path')
+			.setDesc('Path to your python3 file with required packages (see README.md)')
 			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
+				.setPlaceholder('path')
+				.setValue(this.plugin.settings.pythonPath)
 				.onChange(async (value) => {
-					console.log('Secret: ' + value);
-					this.plugin.settings.mySetting = value;
+					this.plugin.settings.pythonPath = value;
 					await this.plugin.saveSettings();
+					this.plugin.pyshell.kill();
+					this.plugin.run_pyshell();
+				}));
+
+		new Setting(containerEl)
+			.setName('Command file')
+			.setDesc('Path to file with your custom LaTeX commands (\\newcommand)')
+			.addText(text => text
+				.setPlaceholder('path')
+				.setValue(this.plugin.settings.commands)
+				.onChange(async (value) => {
+					this.plugin.settings.commands = value;
+					await this.plugin.saveSettings();
+					this.plugin.pyshell.kill();
+					this.plugin.run_pyshell();
 				}));
 	}
 }
