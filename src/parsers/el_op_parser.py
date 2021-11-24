@@ -24,7 +24,7 @@ def parse_operation(text):
     elif re.fullmatch(r'\(\s*\d+\s*(?:col)?\s*\)\s*[+-]\s*.*?\(\s*\d+\s*(?:col)?\s*\)', text):
         temp = re.findall(r'\(\s*\d+\s*(?:col)?\s*\)', text)
         n, m = int(re.search(r'\d+', temp[0]).group(0)), int(re.search(r'\d+', temp[-1]).group(0))
-        k = text[len(temp[0]):len(text) - len(temp[-1])]
+        k = text[len(temp[0]):len(text) - len(temp[-1])].strip()
         if k in '+-':
             k += '1'
         k = parse_latex(k)
