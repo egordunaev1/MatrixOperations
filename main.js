@@ -476,7 +476,7 @@ var MatrixOperationsPlugin = class extends import_obsidian.Plugin {
       id: "rref",
       name: "rref",
       editorCallback: (editor, view) => {
-        this.editors[id] = editor;
+        this.editors[this.id] = editor;
         let latex = editor.getSelection();
         this.pyshell.send({ command: "rref", text: latex, "id": this.id });
         this.id++;
