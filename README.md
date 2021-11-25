@@ -10,7 +10,7 @@ git clone https://github.com/egordunaev1/MatrixOperations/
 2. Install Python (https://www.python.org/)
 3. Install Python packages
 ```
-pip3 install sympy, antlr4-python3-runtime
+pip3 install sympy antlr4-python3-runtime
 ```
 4. Install another useful plugin
 
