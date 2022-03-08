@@ -83,7 +83,7 @@ And the following elementary operation commands:
 }
 \simop{
 (1)+\frac{1}{2}(3)\\ %Adds half of the third row to the first row
-(1)\lra(2)\\ %Swaps first and second row
+(1)\lra(2)\\ %Swaps first and second rows
 (2col)\cdot 2\cdot\frac{1}{7} %Multiplies 2nd column by 2/7
 }
 ```
